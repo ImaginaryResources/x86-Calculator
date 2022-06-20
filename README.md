@@ -7,8 +7,8 @@ I want to make as much as I can from scratch
 
 ## Resources: 
 
-Irvinge Library: https://github.com/surferkip/asmbook 
+Irvinge Library: [ASM Book](https://github.com/surferkip/asmbook)
 
-Setup dev enviroment: https://www.youtube.com/watch?v=v1VROHebel8
+Setup dev enviroment: [YouTube](https://www.youtube.com/watch?v=v1VROHebel8)
 
-Used to make UML comments: https://asciiflow.com
+Used to make UML comments: [ASCII Flow](https://asciiflow.com)
