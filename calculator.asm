@@ -3,7 +3,8 @@
 
 INCLUDE Irvine32.inc
 
-;TODO: Turn labels into functions. Ex: turn addition and getUserInput into a function
+;TODO: Turn labels into functions. Ex: turn addition and multipilcation into a function
+;         Saving and Restoring Registers before procedures (EBP) and local variables
 
 .data
 ;User input variables
@@ -38,6 +39,8 @@ ptrT dword offset arrayTexts
 
 counter dword 1 ;How to get rid of counter?
 
+sum dword ?
+
 .code
 main proc
 
@@ -49,39 +52,31 @@ main proc
           mov select, eax               ;Move user input into select variable
      
           cmp select, 1                 ;If selection = 1, jump to addition
-          je userInput                  ;Get user input
-          S1:
-               jmp addition
+          je addition
 
-          cmp select, 2                 ;If selection = 1, jump to subtraction
+          cmp select, 2                 ;If selection = 2, jump to subtraction
           je subtraction
-          cmp select, 3                 ;If selection = 1, jump to multipilcation
+
+          cmp select, 3                 ;If selection = 3, jump to multipilcation
           je multiplication
-          cmp select, 4                 ;If selection = 1, jump to division
+
+          cmp select, 4                 ;If selection = 4, jump to division
           je division
-          cmp select, 5                 ;If selection = 1, show history
+
+          cmp select, 5                 ;If selection = 5, show history
           je history
-          cmp select, 6                 ;If selection = 1, exit program
+
+          cmp select, 6                 ;If selection = 6, exit program
           je theExit
 
-          mov edx, offset prompt9       ;If invalid selection
-          call writeString              ;Ask user to select again
+          mov ecx, offset prompt9
+          mov esi, lengthof prompt9
+          call printStr
           jmp selection
-     
-
-     userInput:
-         mov edx, offset prompt10       ;Ask user for first number
-         call writeString
-         call readInt                   ;Get users input and move into input variable
-         mov input1, eax
-
-         mov edx, offset prompt11       ;Ask user for second number
-         call writeString
-         call readInt                   ;Get users input and move into input variable
-         mov input2, eax
-         jmp S1
 
      addition:
+          call getUserInput             ;Get user input
+
           ;EBX = Sum (input1)
           ;EAX = Carry (input2)
           L2:
@@ -97,8 +92,10 @@ main proc
                mov input2, eax          ;Store shifted carry into input2
                jnz L2                   ;If a carry still exist loop again
      
-          mov edx, offset prompt8       ;Result text
-          call writeString
+
+          mov ecx, offset prompt8       ;Result Text
+          mov esi, lengthof prompt8
+          call printStr
 
           mov eax, input1               ;Store result in eax
           call writeInt                 ;Print result
@@ -111,7 +108,36 @@ main proc
           jmp start
 
      multiplication:
-          ;TODO
+          call getUserInput             ;Get user input
+
+          mov eax, input1               ;Move input1 into eax
+          mov ecx, 32
+          mov ebx, 0
+
+          next:
+               rcr eax, 1
+               jnc L1
+               pushad
+               mov ecx, ebx
+               mov eax, input2        
+               shl eax, cl
+               add sum, eax             ;Use add procedure
+               popad
+
+          L1:
+               inc ebx
+               loop next
+
+          mov ecx, offset prompt8       ;Result Text
+          mov esi, lengthof prompt8
+          call printStr
+
+          mov eax, sum
+          call writeInt
+          call Crlf                     ;New line
+
+          mov sum, 0                    ;Clear sum
+
           jmp start
 
      division:
@@ -120,6 +146,24 @@ main proc
 
      history:
           jmp start
+
+getUserInput proc
+
+          mov ecx, offset prompt10        ;Ask user for first number
+          mov esi, lengthof prompt10
+          call printStr
+          call readInt                   ;Get users input and move into input variable
+          mov input1, eax
+
+          
+          mov ecx, offset prompt11      ;Ask user for second number
+          mov esi, lengthof prompt11
+          call printStr
+          call readInt                   ;Get users input and move into input variable
+          mov input2, eax
+
+          ret
+getUserInput endp
 
 printMenu proc
      push esi
@@ -132,14 +176,7 @@ printMenu proc
      ;then move the esi pointer to the next element in arrayTexts
 
      P1:
-          ;TODO can probably call printStr here
-          P2:
-               mov al, byte ptr[ecx]    ;Move char at from element of ArrayTexts into al
-               inc ecx                  ;Move to next char when called again
-               call writeChar           ;Print char to console
-          
-               cmp al, NULL             ;If null terminated end loop, if not continue
-               jnz P2
+          call printStr                 ;Print string pointer is currently at
 
           mov ebx, counter              ;Move current counter into ebx register
           inc counter                   ;Increase the counter for next run
@@ -156,18 +193,15 @@ printMenu proc
 printMenu endp
 
 printStr proc
-     push esi
-     push ecx
+          print:
+               mov al, byte ptr[ecx]    ;Move Char at ecx address into al
+               inc ecx                  ;Move to next char
+               call writeChar           ;Print char to console
+          
+               cmp al, NULL             ;If null terminated end loop, if not continue
+               jnz print
 
-     print:
-	     mov al, byte ptr[esi]         ;Move Char at esi address into al
-	     inc esi                       ;Move to next char
-	     call WriteChar                ;Write char
-	     loop print                    ;Loop until all chars are printed
-
-     pop ecx
-     pop esi
-     ret
+          ret
 
 printStr endp
 
