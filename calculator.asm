@@ -3,8 +3,8 @@
 
 INCLUDE Irvine32.inc
 
-;TODO: Turn labels into functions. Ex: turn addition and multipilcation into a function
-;         Saving and Restoring Registers before procedures (EBP) and local variables
+;TODO: Turn labels into procedures. Ex: turn multipilcation into a procedure,
+;         make local variables?, add more comments, 
 
 .data
 ;User input variables
@@ -21,18 +21,17 @@ prompt1 byte "1) Addition",0dh,0ah,0
 prompt2 byte "2) Subtraction",0dh,0ah,0
 prompt3 byte "3) Multiplication",0dh,0ah,0
 prompt4 byte "4) Division",0dh,0ah,0
-prompt5 byte "5) History",0dh,0ah,0
-prompt6 byte "6) Exit",0dh,0ah,0
-prompt7 byte "Enter selection: ",0
+prompt5 byte "5) Exit",0dh,0ah,0
+prompt6 byte "Enter selection: ",0
 
-prompt8 byte "Result: ",0
-prompt9 byte "Enter a valid selection: ",0
+prompt7 byte "Result: ",0
+prompt8 byte "Enter a valid selection: ",0
 
-prompt10 byte "Enter first number: ",0
-prompt11 byte "Enter second number: ",0
+prompt9 byte "Enter first number: ",0
+prompt10 byte "Enter second number: ",0
 
 ;Array of menu prompts
-arrayTexts dword prompt0, prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, prompt7, 0
+arrayTexts dword prompt0, prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, 0
 
 ;Pointer to arrayTexts
 ptrT dword offset arrayTexts
@@ -43,6 +42,15 @@ sum dword ?
 
 .code
 main proc
+     ;Work for subtraciton
+     ;mov eax, 32
+     ;call writeInt
+     ;call crlf
+
+     ;xor eax, -1
+     ;inc eax
+     ;call writeInt
+     ;call crlf
 
      start:
           call printMenu                ;Print Menu to Console
@@ -51,57 +59,37 @@ main proc
           call readInt                  ;Get users selection
           mov select, eax               ;Move user input into select variable
      
-          cmp select, 1                 ;If selection = 1, jump to addition
-          je addition
+          S1:
+               cmp select, 1                 ;If selection = 1, jump to addition
+               jne S2
+               call getUserInput
+               call addition
+               jmp start
+          
+          S2:
+               cmp select, 2                 ;If selection = 2, jump to subtraction
+               jne S3
+               je subtraction
+               jmp start
+          S3:
+               cmp select, 3                 ;If selection = 3, jump to multipilcation
+               jne S4
+               je multiplication
+               jmp start
+          S4:
+               cmp select, 4                 ;If selection = 4, jump to division
+               jne S5
+               je division
+               jmp start
+          S5:
+               cmp select, 5                 ;If selection = 5, exit program
+               je theExit
 
-          cmp select, 2                 ;If selection = 2, jump to subtraction
-          je subtraction
-
-          cmp select, 3                 ;If selection = 3, jump to multipilcation
-          je multiplication
-
-          cmp select, 4                 ;If selection = 4, jump to division
-          je division
-
-          cmp select, 5                 ;If selection = 5, show history
-          je history
-
-          cmp select, 6                 ;If selection = 6, exit program
-          je theExit
-
-          mov ecx, offset prompt9
-          mov esi, lengthof prompt9
-          call printStr
-          jmp selection
-
-     addition:
-          call getUserInput             ;Get user input
-
-          ;EBX = Sum (input1)
-          ;EAX = Carry (input2)
-          L2:
-               mov eax, input1          ;Store input1 to perform XOR
-               xor eax, input2          ;Bitwise operation XOR performs 'add' 
-               mov ebx, eax             ;'Add' xor to Sum
-
-               mov eax, input1          ;Store input1 to preform AND
-               and eax, input2          ;Bitwise operation AND shows which positions need a carry
-     
-               shl eax, 1               ;Shift left to check for carries
-               mov input1, ebx          ;Store sum into input1
-               mov input2, eax          ;Store shifted carry into input2
-               jnz L2                   ;If a carry still exist loop again
-     
-
-          mov ecx, offset prompt8       ;Result Text
+          mov ecx, offset prompt8
           mov esi, lengthof prompt8
           call printStr
-
-          mov eax, input1               ;Store result in eax
-          call writeInt                 ;Print result
-          call Crlf                     ;New line
-
-          jmp start
+          
+          jmp selection
 
      subtraction:
           ;TODO
@@ -128,8 +116,8 @@ main proc
                inc ebx
                loop next
 
-          mov ecx, offset prompt8       ;Result Text
-          mov esi, lengthof prompt8
+          mov ecx, offset prompt7       ;Result Text
+          mov esi, lengthof prompt7
           call printStr
 
           mov eax, sum
@@ -144,28 +132,69 @@ main proc
           ;TODO
           jmp start
 
-     history:
-          jmp start
+addition proc
+     push ebp
+     mov ebp,esp
+
+     ;EBX = Sum (input1)
+     ;EAX = Carry (input2)
+     L2:
+          mov eax, input1          ;Store input1 to perform XOR
+          xor eax, input2          ;Bitwise operation XOR performs 'add' 
+          mov ebx, eax             ;'Add' xor to Sum
+
+          mov eax, input1          ;Store input1 to preform AND
+          and eax, input2          ;Bitwise operation AND shows which positions need a carry
+     
+          shl eax, 1               ;Shift left to check for carries
+
+          mov input1, ebx          ;Store sum into input1
+          mov input2, eax          ;Store shifted carry into input2
+
+          jnz L2                   ;If a carry still exist loop again
+     
+
+     mov ecx, offset prompt7       ;Result Text
+     mov esi, lengthof prompt7
+     call printStr
+
+     mov eax, input1               ;Store result in eax
+     call writeInt                 ;Print result
+     call Crlf                     ;New line
+
+     mov esp, ebp
+     pop ebp
+     
+     ret
+addition endp
 
 getUserInput proc
+          push ebp
+          mov ebp,esp
 
-          mov ecx, offset prompt10        ;Ask user for first number
-          mov esi, lengthof prompt10
+          mov ecx, offset prompt9        ;Ask user for first number
+          mov esi, lengthof prompt9
           call printStr
           call readInt                   ;Get users input and move into input variable
           mov input1, eax
 
           
-          mov ecx, offset prompt11      ;Ask user for second number
-          mov esi, lengthof prompt11
+          mov ecx, offset prompt10       ;Ask user for second number
+          mov esi, lengthof prompt10
           call printStr
           call readInt                   ;Get users input and move into input variable
           mov input2, eax
+
+          mov esp, ebp
+          pop ebp
 
           ret
 getUserInput endp
 
 printMenu proc
+     push ebp
+     mov ebp,esp
+
      push esi
      push ecx
      mov esi, ptrT                      ;Pointer to arrayTexts
@@ -186,23 +215,32 @@ printMenu proc
           jnz P1                        ;If array is null terminated, end of printing menu
 
      mov counter, 1
+
      pop ecx
      pop esi
-     ret
+     
+     mov esp, ebp
+     pop ebp
 
+     ret
 printMenu endp
 
 printStr proc
-          print:
-               mov al, byte ptr[ecx]    ;Move Char at ecx address into al
-               inc ecx                  ;Move to next char
-               call writeChar           ;Print char to console
+     push ebp
+     mov ebp,esp
+
+     print:
+          mov al, byte ptr[ecx]    ;Move Char at ecx address into al
+          inc ecx                  ;Move to next char
+          call writeChar           ;Print char to console
           
-               cmp al, NULL             ;If null terminated end loop, if not continue
-               jnz print
+          cmp al, NULL             ;If null terminated end loop, if not continue
+          jnz print
 
-          ret
+     mov esp, ebp
+     pop ebp
 
+     ret
 printStr endp
 
      theExit:
