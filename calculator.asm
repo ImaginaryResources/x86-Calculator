@@ -78,7 +78,7 @@ main proc
 
           mov ecx, offset prompt8
           mov esi, lengthof prompt8
-          call printStr                      ;Print invalid selection
+          call printStr                      ;Inform user to enter valid selection
           
           jmp selection                      ;Ask for another selection
 
@@ -122,16 +122,17 @@ addition proc
      ret
 addition endp
 
+;Subtraction is just addition with negative signs
+;Ex: 6 - 3 is the same as 6 + (-3)
+
 subtraction proc
      push ebp                      ;Save Registers
      mov ebp,esp
      
-     ;Perform 2's complement on input2
+                                   ;Perform 2's complement on input2
      xor input2, -1                ;Flip every bit in input2
      inc input2                    ;Increase by 1
 
-     ;Subtraction is just addition with negative signs
-     ;Ex: 6 - 3 is the same as 6 + (-3)
      call addition
 
      mov esp, ebp
@@ -139,27 +140,38 @@ subtraction proc
      ret
 subtraction endp
 
+;Example of binary multiplication
+;    input1 = 5 input2 = 3
+;     5 * 3 = 5 * (2^1 + 2^0) <---- Binary rep of 3 is 0011
+;           = 5 * (2 + 1) = (5 * 2) + (5 * 1)
+;           = 15
+
 multiplication proc
      push ebp                      ;Save Registers
      mov ebp,esp
 
-     mov eax, input1               ;Move input1 into eax
-     mov ecx, 32
-     mov ebx, 0
+     mov eax, input1               ;Move input1 (multiplicand) into eax
+     mov ecx, 32                   ;Size of register
+     mov ebx, 0                    ;Clear ebx register, counter
 
+                                   ;Pushad and popad reset general registers
      next:
-          rcr eax, 1
-          jnc L1
-          pushad
-          mov ecx, ebx
-          mov eax, input2
-          shl eax, cl
-          add sum, eax             ;Use add procedure
-          popad
+          rcr eax, 1               ;Rotate bits to right
+          jnc M1                   ;If carry flag is 1, get position
+          pushad                   ;Store all general registers
+          
+          mov ecx, ebx             ;Move position of on bit into ecx
+          mov eax, input2          ;Move input2 (multipler) into eax
+                                   ;cl is a 8 bit sub-register of ecx 
+          shl eax, cl              ;Perform bitwise multiplication by shl w/ current position
+          
+                                   ;Use addition procedure here
+          add sum, eax             ;add current input2 * 2^cl into sum
+          popad                    ;Overwrites all general registers
 
-     L1:
-          inc ebx
-          loop next
+     M1:
+          inc ebx                  ;Current position that bit is on
+          loop next                ;Continue to next bit
 
      mov ecx, offset prompt7       ;Result Text
      mov esi, lengthof prompt7
