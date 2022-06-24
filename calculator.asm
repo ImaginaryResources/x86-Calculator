@@ -3,8 +3,7 @@
 
 INCLUDE Irvine32.inc
 
-;TODO: Turn labels into procedures. Ex: turn multipilcation into a procedure,
-;         make local variables?, add more comments, 
+;TODO: Make local variable for sum and counter, add more comments, div procedure
 
 .data
 ;User input variables
@@ -15,7 +14,7 @@ input2 dword ?
 ;0dh,0ah New line
 ;0 End of line
 
-;Menu variables
+;Menu prompts
 prompt0 byte "Select an Operation to preform:",0dh,0ah,0
 prompt1 byte "1) Addition",0dh,0ah,0
 prompt2 byte "2) Subtraction",0dh,0ah,0
@@ -24,9 +23,9 @@ prompt4 byte "4) Division",0dh,0ah,0
 prompt5 byte "5) Exit",0dh,0ah,0
 prompt6 byte "Enter selection: ",0
 
+;Additional console prompts
 prompt7 byte "Result: ",0
 prompt8 byte "Enter a valid selection: ",0
-
 prompt9 byte "Enter first number: ",0
 prompt10 byte "Enter second number: ",0
 
@@ -36,22 +35,12 @@ arrayTexts dword prompt0, prompt1, prompt2, prompt3, prompt4, prompt5, prompt6, 
 ;Pointer to arrayTexts
 ptrT dword offset arrayTexts
 
+;Make these local variables
 counter dword 1 ;How to get rid of counter?
-
 sum dword ?
 
 .code
 main proc
-     ;Work for subtraciton
-     ;mov eax, 32
-     ;call writeInt
-     ;call crlf
-
-     ;xor eax, -1
-     ;inc eax
-     ;call writeInt
-     ;call crlf
-
      start:
           call printMenu                ;Print Menu to Console
 
@@ -60,80 +49,45 @@ main proc
           mov select, eax               ;Move user input into select variable
      
           S1:
-               cmp select, 1                 ;If selection = 1, jump to addition
+               cmp select, 1                 ;If selection != 1, jump to S2
                jne S2
-               call getUserInput
-               call addition
-               jmp start
+               call getUserInput             ;Get user input
+               call addition                 ;Complete Addition
+               jmp start                     ;Go back to menu
           
           S2:
-               cmp select, 2                 ;If selection = 2, jump to subtraction
+               cmp select, 2                 ;If selection != 2, jump to S3
                jne S3
-               je subtraction
-               jmp start
+               call getUserInput             ;Get user input
+               call subtraction              ;Complete Subtraction
+               jmp start                     ;Go back to menu
           S3:
-               cmp select, 3                 ;If selection = 3, jump to multipilcation
+               cmp select, 3                 ;If selection != 3, jump to S4
                jne S4
-               je multiplication
-               jmp start
+               call getUserInput             ;Get user input
+               call multiplication           ;Complete Multiplication
+               jmp start                     ;Go back to menu
           S4:
-               cmp select, 4                 ;If selection = 4, jump to division
+               cmp select, 4                 ;If selection != 4, jump to S5
                jne S5
-               je division
-               jmp start
+               je division                   ;Complete Division
+               jmp start                     ;Go back to menu
           S5:
                cmp select, 5                 ;If selection = 5, exit program
                je theExit
 
           mov ecx, offset prompt8
           mov esi, lengthof prompt8
-          call printStr
+          call printStr                      ;Print invalid selection
           
-          jmp selection
-
-     subtraction:
-          ;TODO
-          jmp start
-
-     multiplication:
-          call getUserInput             ;Get user input
-
-          mov eax, input1               ;Move input1 into eax
-          mov ecx, 32
-          mov ebx, 0
-
-          next:
-               rcr eax, 1
-               jnc L1
-               pushad
-               mov ecx, ebx
-               mov eax, input2        
-               shl eax, cl
-               add sum, eax             ;Use add procedure
-               popad
-
-          L1:
-               inc ebx
-               loop next
-
-          mov ecx, offset prompt7       ;Result Text
-          mov esi, lengthof prompt7
-          call printStr
-
-          mov eax, sum
-          call writeInt
-          call Crlf                     ;New line
-
-          mov sum, 0                    ;Clear sum
-
-          jmp start
+          jmp selection                      ;Ask for another selection
 
      division:
           ;TODO
           jmp start
 
 addition proc
-     push ebp
+     push ebp                      ;Save Registers
      mov ebp,esp
 
      ;EBX = Sum (input1)
@@ -163,42 +117,115 @@ addition proc
      call Crlf                     ;New line
 
      mov esp, ebp
-     pop ebp
+     pop ebp                       ;Restore Registers
      
      ret
 addition endp
 
-getUserInput proc
-          push ebp
-          mov ebp,esp
+subtraction proc
+     push ebp                      ;Save Registers
+     mov ebp,esp
+     
+     ;Perform 2's complement on input2
+     xor input2, -1                ;Flip every bit in input2
+     inc input2                    ;Increase by 1
 
-          mov ecx, offset prompt9        ;Ask user for first number
-          mov esi, lengthof prompt9
-          call printStr
-          call readInt                   ;Get users input and move into input variable
-          mov input1, eax
+     ;Subtraction is just addition with negative signs
+     ;Ex: 6 - 3 is the same as 6 + (-3)
+     call addition
+
+     mov esp, ebp
+     pop ebp                       ;Restore Registers
+     ret
+subtraction endp
+
+multiplication proc
+     push ebp                      ;Save Registers
+     mov ebp,esp
+
+     mov eax, input1               ;Move input1 into eax
+     mov ecx, 32
+     mov ebx, 0
+
+     next:
+          rcr eax, 1
+          jnc L1
+          pushad
+          mov ecx, ebx
+          mov eax, input2
+          shl eax, cl
+          add sum, eax             ;Use add procedure
+          popad
+
+     L1:
+          inc ebx
+          loop next
+
+     mov ecx, offset prompt7       ;Result Text
+     mov esi, lengthof prompt7
+     call printStr
+
+     mov eax, sum
+     call writeInt
+     call Crlf                     ;New line
+
+     mov sum, 0                    ;Clear sum
+
+     mov esp, ebp
+     pop ebp                       ;Restore Registers
+
+     ret
+multiplication endp
+
+getUserInput proc
+     push ebp                      ;Save Registers
+     mov ebp,esp
+
+     mov ecx, offset prompt9       ;Ask user for first number
+     mov esi, lengthof prompt9
+     call printStr
+     call readInt                  ;Get users input and move into input variable
+     mov input1, eax
 
           
-          mov ecx, offset prompt10       ;Ask user for second number
-          mov esi, lengthof prompt10
-          call printStr
-          call readInt                   ;Get users input and move into input variable
-          mov input2, eax
+     mov ecx, offset prompt10      ;Ask user for second number
+     mov esi, lengthof prompt10
+     call printStr
+     call readInt                  ;Get users input and move into input variable
+     mov input2, eax
 
-          mov esp, ebp
-          pop ebp
+     mov esp, ebp
+     pop ebp                       ;Restore Registers
 
-          ret
+     ret
 getUserInput endp
 
+printStr proc
+     push ebp                      ;Save Registers
+     mov ebp,esp
+
+     print:
+          mov al, byte ptr[ecx]    ;Move Char at ecx address into al
+          inc ecx                  ;Move to next char
+          call writeChar           ;Print char to console
+          
+          cmp al, NULL             ;If null terminated end loop, if not continue
+          jnz print
+
+     mov esp, ebp
+     pop ebp                       ;Restore Registers
+
+     ret
+printStr endp
+
 printMenu proc
-     push ebp
+     push ebp                      ;Save Registers
      mov ebp,esp
 
      push esi
      push ecx
-     mov esi, ptrT                      ;Pointer to arrayTexts
-     mov ecx, [esi]                     ;[esi] is first item in arrayTexts
+     mov esi, ptrT                 ;Pointer to arrayTexts
+     mov ecx, [esi]                ;[esi] is first item in arrayTexts
      
      ;Because arrayText is an array of pointers to bytes of Text
      ;we need to increment to each character until the NULL terminator
@@ -220,28 +247,10 @@ printMenu proc
      pop esi
      
      mov esp, ebp
-     pop ebp
+     pop ebp                       ;Restore Registers
 
      ret
 printMenu endp
-
-printStr proc
-     push ebp
-     mov ebp,esp
-
-     print:
-          mov al, byte ptr[ecx]    ;Move Char at ecx address into al
-          inc ecx                  ;Move to next char
-          call writeChar           ;Print char to console
-          
-          cmp al, NULL             ;If null terminated end loop, if not continue
-          jnz print
-
-     mov esp, ebp
-     pop ebp
-
-     ret
-printStr endp
 
      theExit:
           main endp
