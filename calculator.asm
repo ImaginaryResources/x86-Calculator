@@ -70,7 +70,8 @@ main proc
           S4:
                cmp select, 4                 ;If selection != 4, jump to S5
                jne S5
-               je division                   ;Complete Division
+               call getUserInput
+               call division
                jmp start                     ;Go back to menu
           S5:
                cmp select, 5                 ;If selection = 5, exit program
@@ -81,10 +82,6 @@ main proc
           call printStr                      ;Inform user to enter valid selection
           
           jmp selection                      ;Ask for another selection
-
-     division:
-          ;TODO
-          jmp start
 
 addition proc
      push ebp                      ;Save Registers
@@ -188,6 +185,53 @@ multiplication proc
 
      ret
 multiplication endp
+
+;Order matters with division, commutative property
+;This procedure only works if there's no remainders or fractions
+;Possible to use IEEE 754 rep?
+
+division proc
+     push ebp                      ;Save Registers
+     mov ebp,esp
+
+     mov eax, input2               ;Move input1 (dividend) into eax
+     mov ecx, 32                   ;Size of register
+     mov ebx, 0                    ;Clear ebx register, counter
+
+                                   ;Pushad and popad reset general registers
+     next:
+          rcr eax, 1               ;Rotate bits to right
+          jnc M1                   ;If carry flag is 1, get position
+          pushad                   ;Store all general registers
+          
+          mov ecx, ebx             ;Move position of on bit into ecx
+          mov eax, input1          ;Move input2 (divisor) into eax
+                                   ;cl is a 8 bit sub-register of ecx
+          shr eax, cl              ;Perform bitwise division by shr w/ current position
+          
+                                   ;Use addition procedure here
+          add sum, eax             ;add current input2 / 2^cl into sum
+          popad                    ;Overwrites all general registers
+
+     M1:
+          inc ebx                  ;Current position that bit is on
+          loop next                ;Continue to next bit
+
+     mov ecx, offset prompt7       ;Result Text
+     mov esi, lengthof prompt7
+     call printStr
+
+     mov eax, sum
+     call writeInt
+     call Crlf                     ;New line
+
+     mov sum, 0                    ;Clear sum
+
+     mov esp, ebp
+     pop ebp                       ;Restore Registers
+
+     ret
+division endp
 
 getUserInput proc
      push ebp                      ;Save Registers
