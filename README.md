@@ -15,4 +15,8 @@ I want to make as much as I can from scratch
 - Setup NASM dev enviroment: [Tutorial](https://medium.com/@axayjha/getting-started-with-masm-8086-assembly-c625478265d8)
 - Check out: [Where is this 8086.zip from?](https://github.com/ImaginaryResources/x86-Calculator/blob/main/Where%20is%20this%208086.zip%20from.md)
 
+### Understanding DOS Function Calls (int 21h)    
+- List: [Function Calls](http://spike.scu.edu.au/~barry/interrupts.html#ah02)
+- Examples: [Pdf](https://www.philadelphia.edu.jo/academics/qhamarsheh/uploads/Lecture%2021%20MS-DOS%20Function%20Calls%20_INT%2021h_.pdf)
+
 Used to make UML comments: [ASCII Flow](https://asciiflow.com) 
