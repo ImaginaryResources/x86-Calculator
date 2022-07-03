@@ -89,7 +89,7 @@ addition proc
 
      ;EBX = Sum (input1)
      ;EAX = Carry (input2)
-     L2:
+     A1:
           mov eax, input1          ;Store input1 to perform XOR
           xor eax, input2          ;Bitwise operation XOR performs 'add' 
           mov ebx, eax             ;'Add' xor to Sum
@@ -102,7 +102,7 @@ addition proc
           mov input1, ebx          ;Store sum into input1
           mov input2, eax          ;Store shifted carry into input2
 
-          jnz L2                   ;If a carry still exist loop again
+          jnz A1                   ;If a carry still exist loop again
      
 
      mov ecx, offset prompt7       ;Result Text
@@ -201,7 +201,7 @@ division proc
                                    ;Pushad and popad reset general registers
      next:
           rcr eax, 1               ;Rotate bits to right
-          jnc M1                   ;If carry flag is 1, get position
+          jnc D1                   ;If carry flag is 1, get position
           pushad                   ;Store all general registers
           
           mov ecx, ebx             ;Move position of on bit into ecx
@@ -213,7 +213,7 @@ division proc
           add sum, eax             ;add current input2 / 2^cl into sum
           popad                    ;Overwrites all general registers
 
-     M1:
+     D1:
           inc ebx                  ;Current position that bit is on
           loop next                ;Continue to next bit
 
