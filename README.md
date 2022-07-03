@@ -5,6 +5,41 @@ Bitwise operations will be created to add, subtract, multiply, and divide
 
 I want to make as much as I can from scratch
 
+## Bitwise Addition: Assembly vs C++
+### Assembly
+```assembly
+ A1:
+      mov eax, input1          ;Store input1 to perform XOR
+      xor eax, input2          ;Bitwise operation XOR performs 'add' 
+      mov ebx, eax             ;'Add' xor to Sum
+
+      mov eax, input1          ;Store input1 to preform AND
+      and eax, input2          ;Bitwise operation AND shows which positions need a carry
+
+      shl eax, 1               ;Shift left to check for carries
+
+      mov input1, ebx          ;Store 'sum' into input1
+      mov input2, eax          ;Store shifted carry into input2
+
+      jnz A1                   ;If a carry still exist loop again
+      
+      ;final sum is stored in input1
+```
+### C++
+```C++
+int addition(int input1, int input2) {
+     while (input2 != 0) {                       //Loop until carry doesn't exist
+
+          int xorStore = input1 ^ input2;        //Store result of xor operation from inputs
+          int andStore = input1 & input2;        //Store result of and operation from inputs
+
+          input1 = xorStore;                     //Store 'sum' into input1
+          input2 = andStore << 1;                //Shift left to check for carries
+     }
+     return input1;                              //Return result stored in input1
+}
+```
+
 ## Resources: 
 ### For Calculator_Irvine32.asm, builtin MASM using Irvine Library
 - Irvinge Library: [ASM Book](https://github.com/surferkip/asmbook)
