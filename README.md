@@ -47,7 +47,7 @@ int addition(int input1, int input2) {
 
 ### For Calculator_MASM.asm, MASM
 - MS-DOS Emulator: [DOSBox-X](https://dosbox-x.com/)
-- Setup NASM dev enviroment: [Tutorial](https://medium.com/@axayjha/getting-started-with-masm-8086-assembly-c625478265d8)
+- Setup MASM dev enviroment: [Tutorial](https://medium.com/@axayjha/getting-started-with-masm-8086-assembly-c625478265d8)
 - Check out: [Where is this 8086.zip from?](https://github.com/ImaginaryResources/x86-Calculator/blob/main/Where%20is%20this%208086.zip%20from.md)
 
 ### Understanding DOS Function Calls (int 21h)    
